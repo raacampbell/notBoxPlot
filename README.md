@@ -1,4 +1,8 @@
 # notBoxPlot
+<p align="center">
+<img src="http://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/26508/versions/17/screenshot.jpg"  height=350px/>
+</p>
+
 
 notBoxPlot is a MATLAB data visualisation function. 
 
