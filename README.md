@@ -14,5 +14,5 @@ Although it's worked well for situations I've needed it, I will be happy to modi
 - SEM_calc.m - calculate standard error of the mean. Provided as a separate function file so that it can be used for other purposes.
 - tInterval_Calc.m - calculate a t-interval. Right now notBoxPlot doesn't make use of this (unless the user edits the code, of course), but it still might be useful. For small sample sizes, the t-interval is larger than the SEM.
 
-* NOTE *
+## Note
 The MATLAB statistics toolbox is not required if you install the nantoolbox from here: http://pub.ist.ac.at/~schloegl/matlab/NaN/ Otherwise you will need the statistics toolbox for nan-handling.
