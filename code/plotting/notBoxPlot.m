@@ -104,7 +104,7 @@ function varargout=notBoxPlot(y,x,jitter,style)
     
     
 % Check input arguments
-error(nargchk(0,4,nargin))
+narginchk(0,4)
 if nargin==0
     help(mfilename)
     return
@@ -134,7 +134,7 @@ if jitter==0 && strcmp(style,'patch')
 end
 
 
-if isvector(y) & isvector(x) & length(x)>1
+if isvector(y) && isvector(x) && length(x)>1
     x=x(:);
    
     if length(x)~=length(y)
@@ -143,7 +143,7 @@ if isvector(y) & isvector(x) & length(x)>1
     
     u=unique(x);
     for ii=1:length(u)
-        f=find(x==u(ii));
+        f=x==u(ii);
         h(ii)=notBoxPlot(y(f),u(ii),jitter,style);
     end
 
@@ -184,7 +184,7 @@ hold on
 
 h=[];
 for ii=1:length(uX)
-    f=find(b==ii);
+    f=b==ii;
     h=[h,myPlotter(x(f),y(:,f))];
 end
 
@@ -243,7 +243,7 @@ function h=myPlotter(X,Y)
                    'markerfacecolor', C+(1-C)*0.65);
  end
 
- if strcmp(style,'line') | strcmp(style,'sdline')
+ if strcmp(style,'line') || strcmp(style,'sdline')
    for k=1:length(X)    
      %Plot SD
      h(k).sd=plot([X(k),X(k)],[mu(k)-SD(k),mu(k)+SD(k)],...
