@@ -126,6 +126,9 @@ if nargin<4
 end
 style=lower(style);
 
+%If x is logical then the function fails. So let's make sure it's a double
+x=double(x);
+
 if jitter==0 && strcmp(style,'patch') 
     warning('A zero value for jitter means no patch object visible')
 end
