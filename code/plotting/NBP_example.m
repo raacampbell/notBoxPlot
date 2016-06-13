@@ -1,6 +1,8 @@
 function NBP_example
 
 clf 
+set(gcf,'PaperPosition',[0,0,12,9]) %Just to make save to disk consistent
+
 W=0.45; %image width
 
 axes('position',[0.05,0.53,W,W])
