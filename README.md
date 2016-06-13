@@ -1,6 +1,6 @@
 # notBoxPlot
 <p align="center">
-<img src="http://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/26508/versions/17/screenshot.jpg"  height=350px/>
+<img src="https://raw.githubusercontent.com/raacampbell/notBoxPlot/gh-pages/images/nbp_example.png"  height=550px/>
 </p>
 
 
