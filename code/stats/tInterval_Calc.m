@@ -28,7 +28,7 @@ function tint=tInterval_Calc(vect, CI)
 %
 % Also see - SEM_calc, tinv
 
-error(nargchk(1,2,nargin))
+narginchk(1,2)
 
 if isvector(vect)
   vect=vect(:);
