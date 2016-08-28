@@ -148,6 +148,11 @@ if legacyCall && isempty(jitter)
     jitter=0.3; %larger value means greater amplitude jitter
 end
 
+%Check for innapropriate mixed usage of new and old call types
+if (legacyCall && length(varargin)>2) || (~legacyCall && mod(length(varargin),2)>0)
+    error('notBoxPlot:legacyError','You have mixed legacy with new-style calls. See function help')
+end
+
 if legacyCall
     if nargin<4
         style='patch'; %Can also be 'line' or 'sdline'
@@ -157,6 +162,7 @@ if legacyCall
 
     varargin={'jitter',jitter,'style',style}; %define varargin so we feed the new-form inputs to the recursive call, below.
 end
+
 
 
 
