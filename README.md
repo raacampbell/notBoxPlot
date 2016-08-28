@@ -22,6 +22,7 @@ Although it's worked well for situations I've needed it, I will be happy to modi
 
 ## FAQ
 Q: "How can I modify the plot to look like..."
+<br />
 A: Most modifications can be done using the function handles. See the function help and the example function, NBP_example
 
 
