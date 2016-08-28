@@ -36,18 +36,27 @@ function varargout=notBoxPlot(y,x,varargin)
 %          missing then a default value is used. 
 %
 % 'style' - a string defining plot style of the data.
-%        'patch' [default] - plots SEM and SD as a box using patch
-%                objects. 
-%        'line' - create a plot where the SD and SEM are
+%        'patch' [default] - plots 95% SEM (by default, see below) and SD as a 
+%                box using patch objects. 
+%        'line' - create a plot where the SD and 95% SEM (see below) are
 %                constructed from lines. 
 %        'sdline' - a hybrid of the above, in which only the SD is 
 %                replaced with a line.
 %
+% 'interval' - 'SEM' [default] Plots a 95% confidence interval for the mean
+%            - 'tInterval' Plots a 95% t-interval for the mean
 %
-% Outputs
-% H - structure of handles for plot objects. Only returned if an
-%     output argument is requested. 
+% 'markMedian' - false [default] if true the median value is highlighted
+%                The median is highlighted as a dotted line or an open square 
+%                (if "line" style was used).
 %
+%
+% Outputs (all area optional)
+% H - structure of handles for plot objects.
+% stats - the values of the mean, SD, etc, used for the plots
+% 
+%
+% 
 %
 % Example 1 - simple example
 % clf 
@@ -109,6 +118,23 @@ function varargout=notBoxPlot(y,x,varargin)
 % subplot(2,1,2)
 % notBoxPlot(randn(20,5),[],'jitter',0.75);
 %
+% 
+% Example 8 - The 95% SEM vs the 95% t-interval
+% clf
+% y=randn(8,3);
+% subplot(1,2,1)
+% notBoxPlot(y), title('95% SEM (n=8)')
+%
+% subplot(1,2,2)
+% notBoxPlot(y,[],'interval','tInterval'), title('95% t-interval (n=8)')
+%
+%
+% Example 8 - Add the median (dotted line) to plots
+% clf
+% n=[5,10,20,40];
+% for ii=1:4, rng(555), notBoxPlot(rand(1,n(ii)),ii,'markMedian',true), end
+%
+%
 %
 % Rob Campbell - August 2016
 %
@@ -160,7 +186,11 @@ if legacyCall
         style=lower(varargin{2});
     end
 
-    varargin={'jitter',jitter,'style',style}; %define varargin so we feed the new-form inputs to the recursive call, below.
+    %TODO: the following will be removed, along with other references to legacy calling, in the next release
+    varargin={'jitter',jitter,'style',style,'interval','SEM'}; %define varargin so we feed the new-form inputs to the recursive call, below.
+    intervalFun = @SEM_calc; 
+    interval= 'SEM';
+    markMedian = false;
 end
 
 
@@ -174,16 +204,29 @@ if ~legacyCall
     params = inputParser;
     params.CaseSensitive = false;
     params.addParameter('jitter', 0.3, @(x) isnumeric(x) & isscalar(x));
-    params.addParameter('style','patch', @(x) ischar(x)); %TODO: check it's one of a defined set of values
+    params.addParameter('style','patch', @(x) ischar(x) && any(strncmp(x,{'patch','line','sdline'},inf)) ); 
+    params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmp(x,{'SEM','tInterval'},inf)) ); 
+    params.addParameter('markMedian', false, @(x) islogical(x));
 
     params.parse(varargin{:});
 
     %Extract values from the inputParser
     jitter =  params.Results.jitter;
     style =  params.Results.style;
+    interval = params.Results.interval;
+    markMedian = params.Results.markMedian;
+
+    %Set interval function
+    switch interval
+        case 'SEM'
+            intervalFun = @SEM_calc;
+        case 'tInterval'
+            intervalFun = @tInterval_calc;
+        otherwise
+            error('Interval %s is unknown',interval)
+    end
+
 end
-
-
 
 
 %If x is logical then the function fails. So let's make sure it's a double
@@ -242,10 +285,14 @@ end
 hold on
 [uX,a,b]=unique(x);
 
-h=[];
+
+H=[];
+stats=[];
 for ii=1:length(uX)
     f=b==ii;
-    h=[h,myPlotter(x(f),y(:,f))];
+    [hTemp,statsTemp]=myPlotter(x(f),y(:,f));
+    H = [H,hTemp];
+    stats = [stats,statsTemp];
 end
 
 hold off
@@ -258,11 +305,15 @@ end
 
 
 if nargout>0
-    varargout{1}=h;
+    varargout{1}=H;
 end
 
 if nargout>1
-    varargout{2}=legacyCall;
+    varargout{2}=stats;
+end
+
+if nargout>2
+    varargout{3}=legacyCall;
 end
 
 
@@ -271,11 +322,16 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function h=myPlotter(X,Y)
+function [h,statsOut]=myPlotter(X,Y)
 
- SEM=SEM_calc(Y); %Supplied external function
+ SEM=intervalFun(Y); %Supplied external function
  SD=nanstd(Y);  %Requires the stats toolbox 
  mu=nanmean(Y); %Requires the stats toolbox 
+ if markMedian
+    med = nanmedian(Y);
+ end
+
+
 
  %The plot colors to use for multiple sets of points on the same x
  %location
@@ -291,17 +347,28 @@ function h=myPlotter(X,Y)
      if strcmp(style,'patch') 
        h(k).sdPtch=patchMaker(SD(k),[0.6,0.6,1]);
      end
-    
+
+     %For optional command line output
+     statsOut(k).mu = mu(k);
+     statsOut(k).interval = SEM(k);
+     statsOut(k).sd = SD(k);
+
+
      if strcmp(style,'patch') || strcmp(style,'sdline')
+       %Plot mean and SEM (and optionally the median)
        h(k).semPtch=patchMaker(SEM(k),[1,0.6,0.6]);
        h(k).mu=plot([X(k)-jitScale,X(k)+jitScale],[mu(k),mu(k)],'-r',...
             'linewidth',2);
+       if markMedian
+          statsOut(k).median = med(k);
+          h(k).med=plot([X(k)-jitScale,X(k)+jitScale],[med(k),med(k)],':r',...
+                'linewidth',2);
+       end
      end
     
      %Plot jittered raw data
      C=cols(k,:);
      J=(rand(size(thisX))-0.5)*jitter;
-
         
      h(k).data=plot(thisX+J, thisY, 'o', 'color', C,...
                    'markerfacecolor', C+(1-C)*0.65);
@@ -318,29 +385,38 @@ function h=myPlotter(X,Y)
 
  if strcmp(style,'line')
      for k=1:length(X)     
-         %Plot mean and SEM
+         %Plot mean and SEM (and optionally the median)
          h(k).mu=plot(X(k),mu(k),'o','color','r',...
              'markerfacecolor','r',...
              'markersize',10);
         
          h(k).sem=plot([X(k),X(k)],[mu(k)-SEM(k),mu(k)+SEM(k)],'-r',...
              'linewidth',2);   
-         h(k).xAxisLocation=x(k);  
+        if markMedian
+            h(k).med=plot(X(k),med(k),'s','color',[0.8,0,0],...
+             'markerfacecolor','none',...
+             'lineWidth',2,...
+             'markersize',12);
+        end
+
+         h(k).xAxisLocation=x(k);
      end
+ end
+ for ii=1:length(h)
+     h(ii).interval=interval;
  end
 
 
 
+     function ptch=patchMaker(thisInterval,color)
+         l=mu(k)-thisInterval;
+         u=mu(k)+thisInterval;
+         ptch=patch([X(k)-jitScale, X(k)+jitScale, X(k)+jitScale, X(k)-jitScale],...
+                [l,l,u,u], 0);
+         set(ptch,'edgecolor',color*0.8,'facecolor',color)
+     end %function patchMaker
 
- function ptch=patchMaker(thisInterval,color)
-     l=mu(k)-thisInterval;
-     u=mu(k)+thisInterval;
-     ptch=patch([X(k)-jitScale, X(k)+jitScale, X(k)+jitScale, X(k)-jitScale],...
-            [l,l,u,u], 0);
-     set(ptch,'edgecolor',color*0.8,'facecolor',color)
- end %function patchMaker
-
-    
+        
     
 end %function myPlotter
 
