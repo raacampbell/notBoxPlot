@@ -1,4 +1,5 @@
 function NBP_example
+% Pretty example use of notBoxPlot
 
 clf 
 set(gcf,'PaperPosition',[0,0,12,9]) %Just to make save to disk consistent
@@ -10,7 +11,7 @@ r=randn(40,5);
 for ii=1:5
   r(:,ii)=r(:,ii)+ii*0.3;
 end
-notBoxPlot(r,[],0.5);
+notBoxPlot(r,[],'jitter',0.5);
 box on
 grid on
 
@@ -23,7 +24,7 @@ IND=zeros(1,20);
 IND(1:4:size(r,2))=1;
 r(:,find(IND))=0.75*r(:,1:4:end)+1.75;
 
-H=notBoxPlot(r,[],0.6);
+H=notBoxPlot(r,[],'jitter',0.6);
 d=[H.data];
 
 %Highlight the plots with higher means
@@ -70,7 +71,7 @@ y(:,end)=0.5*y(:,end)+4;
 y(:,end-1)=y(:,end-1)-1;
 y(1:8,end-1:end)=nan;
 
-H=notBoxPlot(y,x,0.6,'sdline');
+H=notBoxPlot(y,x,'jitter',0.6,'style','sdline');
 set(H(end).data,'Marker','^',...
 	'MarkerSize',5)
 set([H.sd],'LineWidth',4)
@@ -80,7 +81,7 @@ grid on
 
 
 axes('position',[0.53,0.05,W,W])
-H=notBoxPlot(randn(10,1)+7,2,[],'line');
+H=notBoxPlot(randn(10,1)+7,2,'style','line');
 set(H.data,'color','b','Marker','.') 
 
 r=randn(20,10);
@@ -88,7 +89,7 @@ for ii=1:10
   r(:,ii)=r(:,ii)+ii*0.65;
 end
 
-H=notBoxPlot(r,[],0.5);
+H=notBoxPlot(r,[],'jitter',0.5);
 set([H.data],...
 	'MarkerFaceColor',[1,1,1]*0.35,....
 	'markerEdgeColor',[1,1,1]*0.35,...

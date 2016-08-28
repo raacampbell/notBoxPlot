@@ -1,7 +1,7 @@
-function varargout=notBoxPlot(y,x,jitter,style)
+function varargout=notBoxPlot(y,x,varargin)
 % notBoxPlot - Doesn't plot box plots!
 %
-% function notBoxPlot(y,x,jitter,style)
+% function notBoxPlot(y,x,'Param1',val1,'Param2',val2,...)
 %
 %
 % Purpose
@@ -20,18 +20,22 @@ function varargout=notBoxPlot(y,x,jitter,style)
 % y - each column of y is one variable/group. If x is missing or empty
 %     then each column is plotted in a different x position. 
 %
-% x - optional, x axis points at which y columns should be
+% x - [optional], the x axis points at which y columns should be
 %     plotted. This allows more than one set of y values to appear
 %     at one x location. Such instances are coloured differently. 
+%     Contrast the first two panels in Example 1 to see how this input behaves.
+%
 % Note that if x and y are both vectors of the same length this function
 % behaves like boxplot (see Example 5).
 %
-% jitter - how much to jitter the data for visualization
+%
+% Parameter/Value paies
+% 'jitter' - how much to jitter the data for visualization
 %          (optional). The width of the boxes are automatically
 %          scaled to the jitter magnitude. If jetter is empty or
 %          missing then a default value is used. 
 %
-% style - a string defining plot style of the data.
+% 'style' - a string defining plot style of the data.
 %        'patch' [default] - plots SEM and SD as a box using patch
 %                objects. 
 %        'line' - create a plot where the SD and SEM are
@@ -47,9 +51,11 @@ function varargout=notBoxPlot(y,x,jitter,style)
 %
 % Example 1 - simple example
 % clf 
-% subplot(2,1,1)  
+% subplot(2,2,1)  
 % notBoxPlot(randn(20,5));
-% subplot(2,1,2)
+% subplot(2,2,2)  
+% notBoxPlot(randn(20,5),[1:4,7]);
+% subplot(2,2,3:4)
 % h=notBoxPlot(randn(10,40));
 % d=[h.data];
 % set(d(1:4:end),'markerfacecolor',[0.4,1,0.4],'color',[0,0.4,0])
@@ -64,7 +70,7 @@ function varargout=notBoxPlot(y,x,jitter,style)
 %
 % Example 3 - lines
 % clf
-% H=notBoxPlot(randn(20,5),[],[],'line');
+% H=notBoxPlot(randn(20,5),[],'style','line');
 % set([H.data],'markersize',10)
 %
 % Example 4 - mix lines and areas [note that the way this function
@@ -72,7 +78,7 @@ function varargout=notBoxPlot(y,x,jitter,style)
 % this way]
 %
 % clf
-% h=notBoxPlot(randn(10,1)+4,5,[],'line');
+% h=notBoxPlot(randn(10,1)+4,5,'style','line');
 % set(h.data,'color','m')  
 % h=notBoxPlot(randn(50,10));
 % set(h(5).data,'color','m')
@@ -91,20 +97,27 @@ function varargout=notBoxPlot(y,x,jitter,style)
 % clf
 % y=randn(50,1);
 % clf
-% notBoxPlot(y,1,[],'sdline')
+% notBoxPlot(y,1,'style','sdline')
 % notBoxPlot(y,2)   
 % xlim([0,3])
 %
 %
-% Rob Campbell - January 2010
+% Example 7 - the effect of jitter (default jitter is 0.3)
+% clf
+% subplot(2,1,1)
+% notBoxPlot(randn(20,5),[],'jitter',0.15)
+% subplot(2,1,2)
+% notBoxPlot(randn(20,5),[],'jitter',0.75);
 %
-% also see: boxplot
+%
+% Rob Campbell - August 2016
+%
+% Also see: boxplot, NBP_example
 
 
     
     
 % Check input arguments
-narginchk(0,4)
 if nargin==0
     help(mfilename)
     return
@@ -117,14 +130,55 @@ if nargin<2 || isempty(x)
     x=1:size(y,2);
 end
 
-if nargin<3 || isempty(jitter)
+
+if ~isempty(varargin)
+    if isnumeric(varargin{1})
+        jitter=varargin{1};
+        legacyCall=true;
+        fprintf(['\n%s called with legacy input arguments. See function help for new call format.\n',...
+            'Legacy input arguments will be removed in the next release\n\n'],mfilename)
+    else
+        legacyCall=false;
+    end
+else
+    legacyCall=false;
+end
+
+if legacyCall && isempty(jitter)
     jitter=0.3; %larger value means greater amplitude jitter
 end
 
-if nargin<4
-  style='patch'; %Can also be 'line' or 'sdline'
+if legacyCall
+    if nargin<4
+        style='patch'; %Can also be 'line' or 'sdline'
+    else
+        style=lower(varargin{2});
+    end
+
+    varargin={'jitter',jitter,'style',style}; %define varargin so we feed the new-form inputs to the recursive call, below.
 end
-style=lower(style);
+
+
+
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+% Parse input arguments if new-style args were provided
+if ~legacyCall
+
+    params = inputParser;
+    params.CaseSensitive = false;
+    params.addParameter('jitter', 0.3, @(x) isnumeric(x) & isscalar(x));
+    params.addParameter('style','patch', @(x) ischar(x)); %TODO: check it's one of a defined set of values
+
+    params.parse(varargin{:});
+
+    %Extract values from the inputParser
+    jitter =  params.Results.jitter;
+    style =  params.Results.style;
+end
+
+
+
 
 %If x is logical then the function fails. So let's make sure it's a double
 x=double(x);
@@ -144,7 +198,7 @@ if isvector(y) && isvector(x) && length(x)>1
     u=unique(x);
     for ii=1:length(u)
         f=x==u(ii);
-        h(ii)=notBoxPlot(y(f),u(ii),jitter,style);
+        h(ii)=notBoxPlot(y(f),u(ii),varargin{:}); %recursive call
     end
 
 
@@ -197,8 +251,12 @@ if length(x)>1
 end
 
 
-if nargout==1
+if nargout>0
     varargout{1}=h;
+end
+
+if nargout>1
+    varargout{2}=legacyCall;
 end
 
 
