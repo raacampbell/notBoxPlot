@@ -1,8 +1,14 @@
-function NBP_example
+function example
 % Pretty example use of notBoxPlot
 
-clf 
-set(gcf,'PaperPosition',[0,0,12,9]) %Just to make save to disk consistent
+disp('Running example')
+
+hFig=figure(1984);
+
+set(hFig,...
+	'Name','notBoxPlot example',...
+	'PaperPosition',[0,0,12,9]) %Just to make save to disk consistent)
+clf
 
 W=0.45; %image width
 

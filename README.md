@@ -28,8 +28,9 @@ A: Most modifications can be done using the function handles. See the function h
 
 ## Included functions
 - notBoxPlot.m - generates plots as shown in screenshot
-- SEM_calc.m - calculate standard error of the mean. Provided as a separate function file so that it can be used for other purposes.
-- tInterval_calc.m - calculate a t-interval. For small sample sizes, the t-interval is larger than the SEM. Provided as a separate function file so that it can be used for other purposes.
+- NBP.SEM_calc.m - calculate standard error of the mean. Provided as a separate function file so that it can be used for other purposes.
+- NBP.tInterval_calc.m - calculate a t-interval. For small sample sizes, the t-interval is larger than the SEM. Provided as a separate function file so that it can be used for other purposes.
+- NBP.example - makes a nice example plot
 
-## Note
-The MATLAB statistics toolbox is not required if you install the nantoolbox from here: http://pub.ist.ac.at/~schloegl/matlab/NaN/ Otherwise you will need the statistics toolbox for nan-handling.
+## Installation
+Add the ``code`` directory to your MATLAB path. Does not rely on any toolboxes. 

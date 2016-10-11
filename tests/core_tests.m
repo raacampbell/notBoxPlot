@@ -107,8 +107,8 @@ classdef core_tests < matlab.unittest.TestCase
 			h=notBoxPlot(y,x,'style','line','markMedian',true);
 			testCase.verifyTrue(isfield(h,'med'))
 
-			clf 
-			NBP_example
+			%Check that the example runs
+			NBP.example
 			
  			close(gcf)
 		end

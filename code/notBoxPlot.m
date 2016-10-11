@@ -138,7 +138,7 @@ function varargout=notBoxPlot(y,x,varargin)
 %
 % Rob Campbell - August 2016
 %
-% Also see: boxplot, NBP_example
+% Also see: boxplot, NBP.example
 
 
     
@@ -188,7 +188,7 @@ if legacyCall
 
     %TODO: the following will be removed, along with other references to legacy calling, in the next release
     varargin={'jitter',jitter,'style',style,'interval','SEM'}; %define varargin so we feed the new-form inputs to the recursive call, below.
-    intervalFun = @SEM_calc; 
+    intervalFun = @NBP.SEM_calc; 
     interval= 'SEM';
     markMedian = false;
 end
@@ -219,9 +219,9 @@ if ~legacyCall
     %Set interval function
     switch interval
         case 'SEM'
-            intervalFun = @SEM_calc;
+            intervalFun = @NBP.SEM_calc;
         case 'tInterval'
-            intervalFun = @tInterval_calc;
+            intervalFun = @NBP.tInterval_calc;
         otherwise
             error('Interval %s is unknown',interval)
     end
@@ -325,10 +325,10 @@ end
 function [h,statsOut]=myPlotter(X,Y)
 
  SEM=intervalFun(Y); %Supplied external function
- SD=nanstd(Y);  %Requires the stats toolbox 
- mu=nanmean(Y); %Requires the stats toolbox 
+ SD=std(Y,'omitnan');  %Requires the stats toolbox 
+ mu=mean(Y,'omitnan'); %Requires the stats toolbox 
  if markMedian
-    med = nanmedian(Y);
+    med = median(Y,'omitnan');
  end
 
 
