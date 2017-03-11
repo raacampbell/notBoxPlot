@@ -15,7 +15,7 @@ Although it's worked well for situations I've needed it, I will be happy to modi
 
 ## Features
 - Easily mix a variety of plot styles on one figure
-- Easy post-hod modification of plot parameters via returned function handles
+- Easy post-hoc modification of plot parameters via returned function handles
 - Statistics (mean, SD, etc) optionally returned 
 - Optional plotting of median in addition to mean 
 - Option to plot either a 95% confidence interval for the mean or a 95% t-interval
