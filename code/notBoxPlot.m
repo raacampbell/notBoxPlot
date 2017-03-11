@@ -17,13 +17,17 @@ function varargout=notBoxPlot(y,x,varargin)
 %
 %
 % Inputs
-% y - each column of y is one variable/group. If x is missing or empty
-%     then each column is plotted in a different x position. 
+% y - A vector, matrix, or table of the data to plot. 
+%      * vector and no x is provided: all data are grouped at one x position.
+%      * matrix and no x is provided: each column is plotted in a different x position. 
+%      * vector with x grouping variable provided: data grouped accordig to x
+%      * a table is treated such that the first column is y and the second x.
 %
 % x - [optional], the x axis points at which y columns should be
 %     plotted. This allows more than one set of y values to appear
 %     at one x location. Such instances are coloured differently. 
 %     Contrast the first two panels in Example 1 to see how this input behaves.
+%     x need not be provided if y is a table.
 %
 % Note that if x and y are both vectors of the same length this function
 % behaves like boxplot (see Example 5).
@@ -68,9 +72,9 @@ function varargout=notBoxPlot(y,x,varargin)
 % h=notBoxPlot(randn(10,40));
 % d=[h.data];
 % set(d(1:4:end),'markerfacecolor',[0.4,1,0.4],'color',[0,0.4,0])
-%  
+%
 % Example 2 - overlaying with areas
-% clf  
+% clf
 % x=[1,2,3,4,5,5];
 % y=randn(20,length(x));
 % y(:,end)=y(:,end)+3;
@@ -101,7 +105,7 @@ function varargout=notBoxPlot(y,x,varargin)
 % Note: an alternative to the style used in Example 5 is to call
 % notBoxPlot from a loop in an external function. In this case, the
 % user will have to take care of the x-ticks and axis limits. 
-%    
+%
 % Example 6 - replacing the SD with bars
 % clf
 % y=randn(50,1);
@@ -135,13 +139,27 @@ function varargout=notBoxPlot(y,x,varargin)
 % for ii=1:4, rng(555), notBoxPlot(rand(1,n(ii)),ii,'markMedian',true), end
 %
 %
+% Example 10 - Table call format
+% clf
+% albert=[1,1,1,3,2,1,3,3,3,2,2,3,3]';
+% victoria=[7,8,6,1,5,7,2,1,3,4,5,2,4]';
+% M = table(victoria,albert); %place data in first column and groups in the second
+% notBoxPlot(M)
+%
+% Example 11 - Table call format with optional arguments
+% clf
+% albert=[1,1,1,3,2,1,3,3,3,2,2,3,3]';
+% victoria=[7,8,6,1,5,7,2,1,3,4,5,2,4]';
+% M = table(victoria,albert); %place data in first column and groups in the second
+% notBoxPlot(M,'jitter',0.75)
+%
 %
 % Rob Campbell - August 2016
 %
-% Also see: boxplot, NBP.example
+% Also see: NBP.example, boxplot
 
 
-    
+
 
 % Check input arguments
 if nargin==0
@@ -150,19 +168,41 @@ if nargin==0
 end
 
 
-if isvector(y)
-    y=y(:); 
-end
+%Handle table call 
+if istable(y)
 
+    tableCall=true;
+    if nargin>1 %so user doesn't need to specify a blank variable for x
+        if ~isempty(x)
+            varargin = [x,varargin];
+        end
+    end
+    thisTable=y;
+    varNames=thisTable.Properties.VariableNames;
+    if length(varNames) ~= 2
+        fprintf('% s can only handle tables with two variables\n',mfilename)
+        return
+    end
+    y = thisTable.(varNames{1});
+    x = thisTable.(varNames{2});
 
-% Generate an monotonically increasing X variable if the user didn't supply anything
-% for the grouping variable
-if nargin<2 || isempty(x)
-    x=1:size(y,2);
+else
+    tableCall=false;
+
+    if isvector(y)
+        y=y(:); 
+    end
+
+    % Generate an monotonically increasing X variable if the user didn't supply anything
+    % for the grouping variable
+    if nargin<2 || isempty(x)
+        x=1:size(y,2);
+    end
 end
 
 %If x is logical then the function fails. So let's make sure it's a double
 x=double(x);
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -222,6 +262,12 @@ if isvector(y) && isvector(x) && length(x)>1
 
     if nargout==1
         varargout{1}=h;
+    end
+
+    %If we had a table we can label the axes
+    if tableCall
+        ylabel(varNames{1})
+        xlabel(varNames{2})
     end
 
     return
@@ -334,7 +380,7 @@ function [h,statsOut]=myPlotter(X,Y)
 
     %Plot SD as a line
     if strcmp(style,'line') || strcmp(style,'sdline')
-        for k=1:length(X)    
+        for k=1:length(X)
             h(k).sd=plot([X(k),X(k)],[mu(k)-SD(k),mu(k)+SD(k)],...
                       '-','color',[0.2,0.2,1],'linewidth',2);
             set(h(k).sd,'ZData',[1,1]*-1)
@@ -344,8 +390,8 @@ function [h,statsOut]=myPlotter(X,Y)
 
     %Plot mean and SEM as a line, the means, and optionally the medians
     if strcmp(style,'line')
-        for k=1:length(X)     
-            
+        for k=1:length(X)
+
             h(k).mu=plot(X(k),mu(k),'o','color','r',...
                 'markerfacecolor','r',...
                 'markersize',10);
