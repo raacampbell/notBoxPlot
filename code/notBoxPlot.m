@@ -21,7 +21,8 @@ function varargout=notBoxPlot(y,x,varargin)
 %      * vector and no x is provided: all data are grouped at one x position.
 %      * matrix and no x is provided: each column is plotted in a different x position. 
 %      * vector with x grouping variable provided: data grouped accordig to x
-%      * a table is treated such that the first column is y and the second x.
+%      * a Table is treated such that the first column is y and the second x.
+%      * a LinearModel produced by fitlm
 %
 % x - [optional], the x axis points at which y columns should be
 %     plotted. This allows more than one set of y values to appear
@@ -49,6 +50,8 @@ function varargout=notBoxPlot(y,x,varargin)
 %
 % 'interval' - 'SEM' [default] Plots a 95% confidence interval for the mean
 %            - 'tInterval' Plots a 95% t-interval for the mean
+%            - If a LinearModel from fitlm is provided, interval is always
+%              the tInterval and the confidence interval comes from the model.
 %
 % 'markMedian' - false [default] if true the median value is highlighted
 %                The median is highlighted as a dotted line or an open square 
@@ -106,14 +109,24 @@ if nargin==0
     return
 end
 
+% Check if Y is of a suitable class 
+if ~isnumeric(y) && ~istable(y) && ~isa(y,'LinearModel')
+    fprintf('Variable y is a %s. This is not an allowed input type. see help %s\n',...
+        class(y), mfilename)
+    return
+end
 
-%Handle table call 
-if istable(y)
+% Parse the different call types
+modelCIs=[]; 
+tableOrModelCall=false;
 
-    tableCall=true;
+switch lower(class(y))
+
+case 'table'
+    tableOrModelCall=true;
     if nargin>1 %so user doesn't need to specify a blank variable for x
         if ~isempty(x)
-            varargin = [x,varargin];
+            varargin=[x,varargin];
         end
     end
     thisTable=y;
@@ -125,8 +138,31 @@ if istable(y)
     y = thisTable.(varNames{1});
     x = thisTable.(varNames{2});
 
-else
-    tableCall=false;
+case 'linearmodel'
+    tableOrModelCall=true;
+    if nargin>1 %so user doesn't need to specify a blank variable for x
+        if ~isempty(x)
+            varargin=[x,varargin];
+        end
+    end
+
+    thisModel=y;
+
+    if length(thisModel.PredictorNames) >1
+        fprintf('% s can only handle linear models with one predictor\n',mfilename)
+        return
+    end
+    y = thisModel.Variables.(thisModel.ResponseName);
+    x = thisModel.Variables.(thisModel.PredictorNames{1});
+    varNames = {thisModel.ResponseName,thisModel.PredictorNames{1}}; %for the axis labels
+
+   % Set the SD bar to have 1.96 standard deviations
+    varargin = [varargin,'numSDs',1.96];
+
+    % Get the the confidence intervals from the model
+    modelCIs = coefCI(thisModel,0.05);
+
+otherwise %Otherwise Y is a vector or a matrix
 
     if isvector(y)
         y=y(:); 
@@ -135,7 +171,7 @@ else
     % Handle case where user doesn't supply X, but have user param/val pairs. e.g.
     % notBoxPlot(rand(20,5),'jitter',0.5)
     if nargin>2 && ischar(x)
-        varargin = [x,varargin];
+        varargin=[x,varargin];
         x=[];
     end
 
@@ -144,7 +180,9 @@ else
     if nargin<2 || isempty(x)
         x=1:size(y,2);
     end
-end
+
+end %switch class(y)
+
 
 %If x is logical then the function fails. So let's make sure it's a double
 x=double(x);
@@ -155,10 +193,16 @@ x=double(x);
 % Parse input arguments
 params = inputParser;
 params.CaseSensitive = false;
-params.addParameter('jitter', 0.3, @(x) isnumeric(x) & isscalar(x));
+
+%User-visible options
+params.addParameter('jitter', 0.3, @(x) isnumeric(x) && isscalar(x));
 params.addParameter('style','patch', @(x) ischar(x) && any(strncmp(x,{'patch','line','sdline'},inf)) ); 
 params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmp(x,{'SEM','tInterval'},inf)) ); 
 params.addParameter('markMedian', false, @(x) islogical(x));
+
+%Options hidden from the user
+params.addParameter('numSDs',1, @(x) isnumeric(x) && isscalar(x) && x>=0) 
+params.addParameter('manualCI',[], @(x) (isnumeric(x) && isscalar(x)) || isempty(x) )
 
 params.parse(varargin{:});
 
@@ -167,6 +211,10 @@ jitter     = params.Results.jitter;
 style      = params.Results.style;
 interval   = params.Results.interval;
 markMedian = params.Results.markMedian;
+
+%The multiplier for the SD patch. e.g. for 1.96 SDs this value should be 1.96
+numSDs = params.Results.numSDs;
+manualCI = params.Results.manualCI; %Is used by the recursive call to over-ride the CI when y is a LinearModel
 
 %Set interval function
 switch interval
@@ -178,14 +226,15 @@ switch interval
         error('Interval %s is unknown',interval)
 end
 
-
-
-
 if jitter==0 && strcmp(style,'patch') 
     warning('A zero value for jitter means no patch object visible')
 end
 
 
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+% We now loop through the unique x values, plotting each notBox in turn
+% using recursive calls to notBoxPlot.
 if isvector(y) && isvector(x) && length(x)>1
     x=x(:);
    
@@ -195,8 +244,16 @@ if isvector(y) && isvector(x) && length(x)>1
 
     u=unique(x);
     for ii=1:length(u)
-        f = x==u(ii);
-        h(ii)=notBoxPlot(y(f),u(ii),varargin{:}); %recursive call
+        f = find(x==u(ii));
+
+        %If a model was used, we use the 95% t-intervals it produces
+        if ~isempty(modelCIs)
+            thisCI = range(modelCIs(ii,:))/2; %the interval is symmetric and we need just this. 
+        else
+            thisCI =[];
+        end
+
+        h(ii)=notBoxPlot(y(f),u(ii),varargin{:},'manualCI',thisCI); %recursive call
     end
 
 
@@ -211,16 +268,17 @@ if isvector(y) && isvector(x) && length(x)>1
     end
 
     %If we had a table we can label the axes
-    if tableCall
+    if tableOrModelCall
         ylabel(varNames{1})
         xlabel(varNames{2})
     end
 
-    return
-
+    return % User's call to notBoxPlot never goes beyond here
 end
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
- 
+
+
 if length(x) ~= size(y,2)
     error('length of x doesn''t match the number of columns in y')
 end
@@ -271,10 +329,16 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [h,statsOut]=myPlotter(X,Y)
+    %This is a nested function that shares the caller's namespace
 
-    SEM=intervalFun(Y); %Supplied external function
-    SD=std(Y,'omitnan');  %Requires the stats toolbox 
-    mu=mean(Y,'omitnan'); %Requires the stats toolbox 
+    if isempty(manualCI)
+        SEM=intervalFun(Y); %A function handle to a supplied external function
+    else
+        SEM=manualCI;
+    end
+
+    SD=std(Y,'omitnan')*numSDs; 
+    mu=mean(Y,'omitnan');
     if markMedian
        med = median(Y,'omitnan');
     end
@@ -314,11 +378,11 @@ function [h,statsOut]=myPlotter(X,Y)
                     'linewidth',2);
             end
         end
-        
+
         %Overlay the jittered raw data
         C=cols(k,:);
         J=(rand(size(thisX))-0.5)*jitter;
-            
+
         h(k).data=plot(thisX+J, thisY, 'o', 'color', C,...
                        'markerfacecolor', C+(1-C)*0.65);
     end  %for k=1:length(X)
