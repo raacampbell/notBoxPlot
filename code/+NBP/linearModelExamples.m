@@ -48,7 +48,7 @@ function linearModelExamples
 % notBoxPlot(M,'jitter',0.75)
 % grid on, box on
 % ylim([-0.5,2.2])
-% titl
+% title('increased variance in group 5')
 
 help(['NBP.',mfilename])
 

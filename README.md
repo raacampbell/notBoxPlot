@@ -34,3 +34,23 @@ A: Most modifications can be done using the function handles. See the function h
 
 ## Installation
 Add the ``code`` directory to your MATLAB path. Does not rely on any toolboxes. 
+
+
+## Changelog
+
+**v1.2 (28-08-16)**
+
+* Add median to plots
+* Select SEM or t-interval from command line
+* Return stats as second output
+* Move to parameter/value pairs by default and warn user if they aren't doing this. 
+* Add unit tests.
+
+**v1.3 (11-09-16)**
+
+* Remove legacy calls
+* Allow passing of a table, which automatically labels the axes
+* Pass a LinearModel, which automatically labels the axes and uses the model errors
+* Examples are now in separate files and doc text is neater
+* User can now optionally do `notBoxPlot(y,'jitter',0.5)` instead of `notBoxPlot(y,[],'jitter',0.5)` 
+
