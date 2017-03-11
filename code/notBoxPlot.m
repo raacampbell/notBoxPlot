@@ -155,88 +155,45 @@ if isvector(y)
 end
 
 
-%Generate an monotonically increasing X variable if the user didn't supply anything
+% Generate an monotonically increasing X variable if the user didn't supply anything
+% for the grouping variable
 if nargin<2 || isempty(x)
     x=1:size(y,2);
 end
 
-
-if ~isempty(varargin)
-    %Check if these look like legacy input arguments
-    if isnumeric(varargin{1})
-        jitter=varargin{1};
-        legacyCall=true;
-        fprintf(['\n%s called with legacy input arguments. See function help for new call format.\n',...
-            'Legacy input arguments will be removed in the next release\n\n'],mfilename)
-    else
-        legacyCall=false;
-    end
-else
-    legacyCall=false;
-end
-
-if legacyCall && isempty(jitter)
-    jitter=0.3; %larger value means greater amplitude jitter
-end
-
-%Check for innapropriate mixed usage of new and old call types
-if (legacyCall && length(varargin)>2) || (~legacyCall && mod(length(varargin),2)>0)
-    error('notBoxPlot:legacyError','You have mixed legacy with new-style calls. See function help')
-end
-
-
-%If the user fed in legacy arguments, we generate new-style arguments that can be fed to the inputParser 
-if legacyCall
-    if nargin<4
-        style='patch'; %Can also be 'line' or 'sdline'
-    else
-        style=lower(varargin{2});
-    end
-
-    %TODO: the following will be removed, along with other references to legacy calling, in the next release
-    varargin={'jitter',jitter,'style',style,'interval','SEM'}; %define varargin so we feed the new-form inputs to the recursive call, below.
-    intervalFun = @NBP.SEM_calc; 
-    interval= 'SEM';
-    markMedian = false;
-end
-
-
-
+%If x is logical then the function fails. So let's make sure it's a double
+x=double(x);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-% Parse input arguments (including converted legacy arguments)
-if ~legacyCall
+% Parse input arguments
+params = inputParser;
+params.CaseSensitive = false;
+params.addParameter('jitter', 0.3, @(x) isnumeric(x) & isscalar(x));
+params.addParameter('style','patch', @(x) ischar(x) && any(strncmp(x,{'patch','line','sdline'},inf)) ); 
+params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmp(x,{'SEM','tInterval'},inf)) ); 
+params.addParameter('markMedian', false, @(x) islogical(x));
 
-    params = inputParser;
-    params.CaseSensitive = false;
-    params.addParameter('jitter', 0.3, @(x) isnumeric(x) & isscalar(x));
-    params.addParameter('style','patch', @(x) ischar(x) && any(strncmp(x,{'patch','line','sdline'},inf)) ); 
-    params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmp(x,{'SEM','tInterval'},inf)) ); 
-    params.addParameter('markMedian', false, @(x) islogical(x));
+params.parse(varargin{:});
 
-    params.parse(varargin{:});
+%Extract values from the inputParser
+jitter     = params.Results.jitter;
+style      = params.Results.style;
+interval   = params.Results.interval;
+markMedian = params.Results.markMedian;
 
-    %Extract values from the inputParser
-    jitter     = params.Results.jitter;
-    style      = params.Results.style;
-    interval   = params.Results.interval;
-    markMedian = params.Results.markMedian;
-
-    %Set interval function
-    switch interval
-        case 'SEM'
-            intervalFun = @NBP.SEM_calc;
-        case 'tInterval'
-            intervalFun = @NBP.tInterval_calc;
-        otherwise
-            error('Interval %s is unknown',interval)
-    end
+%Set interval function
+switch interval
+    case 'SEM'
+        intervalFun = @NBP.SEM_calc;
+    case 'tInterval'
+        intervalFun = @NBP.tInterval_calc;
+    otherwise
+        error('Interval %s is unknown',interval)
 end
 
 
-%If x is logical then the function fails. So let's make sure it's a double
-x=double(x);
+
 
 if jitter==0 && strcmp(style,'patch') 
     warning('A zero value for jitter means no patch object visible')
@@ -249,7 +206,7 @@ if isvector(y) && isvector(x) && length(x)>1
     if length(x)~=length(y)
         error('length(x) should equal length(y)')
     end
-    
+
     u=unique(x);
     for ii=1:length(u)
         f = x==u(ii);
@@ -262,13 +219,13 @@ if isvector(y) && isvector(x) && length(x)>1
         xlim([min(u)-1,max(u)+1])
         set(gca,'XTick',u)
     end
-    
+
     if nargout==1
         varargout{1}=h;
     end
 
     return
-    
+
 end
 
  
@@ -314,9 +271,6 @@ if nargout>1
     varargout{2}=stats;
 end
 
-if nargout>2
-    varargout{3}=legacyCall;
-end
 
 
 
