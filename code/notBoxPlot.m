@@ -193,6 +193,13 @@ else
         y=y(:); 
     end
 
+    % Handle case where user doesn't supply X, but have user param/val pairs. e.g.
+    % notBoxPlot(rand(20,5),'jitter',0.5)
+    if nargin>2 && ischar(x)
+        varargin = [x,varargin];
+        x=[];
+    end
+
     % Generate an monotonically increasing X variable if the user didn't supply anything
     % for the grouping variable
     if nargin<2 || isempty(x)
