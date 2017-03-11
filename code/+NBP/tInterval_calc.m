@@ -1,7 +1,8 @@
 function tint=tInterval_Calc(vect, CI)
 % tInterval_Calc - confidence interval based on the t-distribution
 %
-% function tint=tInterval_Calc(vect, CI)
+% function tint = NBP.tInterval_Calc(vect, CI)
+%
 %
 % Purpose
 % Calculate the t-interval about the mean to a given confidence
@@ -9,6 +10,7 @@ function tint=tInterval_Calc(vect, CI)
 % of the sample size and are ignored for the SD calculation. Output
 % of this function has been checked against  known working code
 % written in R. 
+%
 %
 % Inputs
 % - vect: Calculates the two-tailed 95% t confidence limits for the mean.
@@ -24,7 +26,10 @@ function tint=tInterval_Calc(vect, CI)
 % plot([mean(r)-T,mean(r)+T], [mean(ylim),mean(ylim)],'r-')
 % hold off
 %
+%
+%
 % Rob Campbell - 12/03/08
+%
 %
 % Also see - SEM_calc, tinv
 
@@ -48,5 +53,5 @@ if stdCI==0
 end
   
 
-tint =  ( (nanstd(vect)) ./ sqrt(sum(~isnan(vect))) ) * stdCI ;    
+tint = ( (nanstd(vect)) ./ sqrt(sum(~isnan(vect))) ) * stdCI ;    
 

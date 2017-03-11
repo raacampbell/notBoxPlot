@@ -1,7 +1,7 @@
 function sem=SEM_calc(vect, CI)
 % SEM_calc - standard error of the mean, confidence interval
 %
-% function sem=SEM_calc(vect, CI) 
+% function sem = NBP.SEM_calc(vect, CI) 
 %
 % Purpose
 % Calculate the standard error the mean to a given confidence
@@ -31,7 +31,9 @@ function sem=SEM_calc(vect, CI)
 % plot([mean(r)-S,mean(r)+S], [mean(ylim),mean(ylim)],'r-')
 % hold off
 %
+%
 % Rob Campbell 
+%
 %
 % Also see - tInterval_Calc, norminv
 
@@ -50,7 +52,4 @@ elseif nargin==2
 end
 
 sem = ( (nanstd(vect)) ./ sqrt(sum(~isnan(vect))) ) * stdCI ;    
-
-
-
 

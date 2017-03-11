@@ -61,102 +61,41 @@ function varargout=notBoxPlot(y,x,varargin)
 % 
 %
 % 
-%
-% Example 1 - simple example
-% clf 
-% subplot(2,2,1)  
-% notBoxPlot(randn(20,5));
-% subplot(2,2,2)  
-% notBoxPlot(randn(20,5),[1:4,7]);
-% subplot(2,2,3:4)
-% h=notBoxPlot(randn(10,40));
-% d=[h.data];
-% set(d(1:4:end),'markerfacecolor',[0.4,1,0.4],'color',[0,0.4,0])
-%
-% Example 2 - overlaying with areas
-% clf
-% x=[1,2,3,4,5,5];
-% y=randn(20,length(x));
-% y(:,end)=y(:,end)+3;
-% y(:,end-1)=y(:,end-1)-1;
-% notBoxPlot(y,x);
-%
-% Example 3 - lines
-% clf
-% H=notBoxPlot(randn(20,5),[],'style','line');
-% set([H.data],'markersize',10)
-%
-% Example 4 - mix lines and areas [note that the way this function
-% sets the x axis limits can cause problems when combining plots
-% this way]
-%
-% clf
-% h=notBoxPlot(randn(10,1)+4,5,'style','line');
-% set(h.data,'color','m')  
-% h=notBoxPlot(randn(50,10));
-% set(h(5).data,'color','m')
-%  
-% Example 5 - x and y are vectors
-% clf
-% x=[1,1,1,3,2,1,3,3,3,2,2,3,3];
-% y=[7,8,6,1,5,7,2,1,3,4,5,2,4];
-% notBoxPlot(y,x);
+% -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+% Examples (run clf between examples):
 % 
-% Note: an alternative to the style used in Example 5 is to call
-% notBoxPlot from a loop in an external function. In this case, the
-% user will have to take care of the x-ticks and axis limits. 
+% 1 - Basic usage:
+%  >> notBoxPlot([7,8,6,1,5,7,2,1,3,4,5,2,4])
+%  >> notBoxPlot([7,8,6,1,5,7,2,1,3,4,5,2,4], [1,1,1,3,2,1,3,3,3,2,2,3,3])
+%  >> notBoxPlot(rand(1,100))
+%  >> notBoxPlot(randn(20,5))
+%  >> notBoxPlot(randn(20,5),[1:4,7]);
+%  >> notBoxPlot(MY_TABLE)
 %
-% Example 6 - replacing the SD with bars
-% clf
-% y=randn(50,1);
-% clf
-% notBoxPlot(y,1,'style','sdline')
-% notBoxPlot(y,2)   
-% xlim([0,3])
-%
-%
-% Example 7 - the effect of jitter (default jitter is 0.3)
-% clf
-% subplot(2,1,1)
-% notBoxPlot(randn(20,5),[],'jitter',0.15)
-% subplot(2,1,2)
-% notBoxPlot(randn(20,5),[],'jitter',0.75);
-%
+%  For more run:
+%   NBP.simpleExamples
+%   NBP.tableExample
 % 
-% Example 8 - The 95% SEM vs the 95% t-interval
-% clf
-% y=randn(8,3);
-% subplot(1,2,1)
-% notBoxPlot(y), title('95% SEM (n=8)')
+% 2 - Changing plot style
+%  >> notBoxPlot(randn(20,5),[],'interval','tinterval'); 
+%  >> notBoxPlot(randn(20,5),'style','line'); %also valid: no need for x
+%  >> notBoxPlot(MY_TABLE,'jitter',0.5)
 %
-% subplot(1,2,2)
-% notBoxPlot(y,[],'interval','tInterval'), title('95% t-interval (n=8)')
+%  For more run:
+%   NBP.lineExamples
+%   NBP.jitterExamples
+%   NBP.showCase
 %
+% 3 - Showing different statistics
+%  >> notBoxPlot(randn(8,3),'interval','tInterval')
+%  >> notBoxPlot(randn(8,3),'markMedian',true)
 %
-% Example 9 - Add the median (dotted line) to plots
-% clf
-% n=[5,10,20,40];
-% for ii=1:4, rng(555), notBoxPlot(rand(1,n(ii)),ii,'markMedian',true), end
-%
-%
-% Example 10 - Table call format
-% clf
-% albert=[1,1,1,3,2,1,3,3,3,2,2,3,3]';
-% victoria=[7,8,6,1,5,7,2,1,3,4,5,2,4]';
-% M = table(victoria,albert); %place data in first column and groups in the second
-% notBoxPlot(M)
-%
-% Example 11 - Table call format with optional arguments
-% clf
-% albert=[1,1,1,3,2,1,3,3,3,2,2,3,3]';
-% victoria=[7,8,6,1,5,7,2,1,3,4,5,2,4]';
-% M = table(victoria,albert); %place data in first column and groups in the second
-% notBoxPlot(M,'jitter',0.75)
-%
+%  For more run:
+%   NBP.statsOptionsExamples
 %
 % Rob Campbell - August 2016
 %
-% Also see: NBP.example, boxplot
+% Also see: boxplot
 
 
 
