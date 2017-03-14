@@ -1,13 +1,28 @@
-function example
-% Pretty example use of notBoxPlot
+function showCase
+% Example showing a variety of effects possible with notBoxPlot
+%
+% function NBP.showCase
+%
+% 
+% Purpose
+% Showcase notBoxPlot
+%
+%
+% No inputs or outputs
+%
+% 
+% Rob Campbell
 
-disp('Running example')
+
+
+W=which(['NBP.',mfilename]);
+fprintf('Running example located at %s\n',W)
 
 hFig=figure(1984);
 
 set(hFig,...
-	'Name','notBoxPlot example',...
-	'PaperPosition',[0,0,12,9]) %Just to make save to disk consistent)
+    'Name','notBoxPlot example',...
+    'PaperPosition',[0,0,12,9]) %Just to make save to disk consistent)
 clf
 
 W=0.45; %image width
@@ -38,16 +53,16 @@ set(d(find(IND)),'markerfacecolor',[0.4,1,0.4],'color',[0,0.4,0])
 
 %higher means as green
 set([H(find(IND)).data],'MarkerSize',4,...
-	'markerFaceColor',[1,1,1]*0.25,...
-	'markerEdgeColor', 'none')
+    'markerFaceColor',[1,1,1]*0.25,...
+    'markerEdgeColor', 'none')
 set([H(find(IND)).semPtch],...
-	'FaceColor',[0,0.75,0],...
-	'EdgeColor','none')
+    'FaceColor',[0,0.75,0],...
+    'EdgeColor','none')
 set([H(find(IND)).sdPtch],...
-	'FaceColor',[0.6,1,0.6],...
-	'EdgeColor','none')
+    'FaceColor',[0.6,1,0.6],...
+    'EdgeColor','none')
 set([H(find(IND)).mu],...
-	'Color',[0,0.4,0])
+    'Color',[0,0.4,0])
 
 
 set(gca,'XTick',[]) 
@@ -55,16 +70,16 @@ set(gca,'XTick',[])
 
 %lower means as gray
 set([H(find(~IND)).data],'MarkerSize',4,...
-	'markerFaceColor',[1,1,1]*0.5,...
-	'markerEdgeColor', 'none')
+    'markerFaceColor',[1,1,1]*0.5,...
+    'markerEdgeColor', 'none')
 set([H(find(~IND)).semPtch],...
-	'FaceColor',[1,1,1]*0.25,...
-	'EdgeColor','none')
+    'FaceColor',[1,1,1]*0.25,...
+    'EdgeColor','none')
 set([H(find(~IND)).sdPtch],...
-	'FaceColor',[1,1,1]*0.75,...
-	'EdgeColor','none')
+    'FaceColor',[1,1,1]*0.75,...
+    'EdgeColor','none')
 set([H(find(~IND)).mu],...
-	'Color','b')
+    'Color','b')
 
 box on
 
@@ -79,7 +94,7 @@ y(1:8,end-1:end)=nan;
 
 H=notBoxPlot(y,x,'jitter',0.6,'style','sdline');
 set(H(end).data,'Marker','^',...
-	'MarkerSize',5)
+    'MarkerSize',5)
 set([H.sd],'LineWidth',4)
 box on
 grid on
@@ -97,9 +112,9 @@ end
 
 H=notBoxPlot(r,[],'jitter',0.5);
 set([H.data],...
-	'MarkerFaceColor',[1,1,1]*0.35,....
-	'markerEdgeColor',[1,1,1]*0.35,...
-	'MarkerSize',3)
+    'MarkerFaceColor',[1,1,1]*0.35,...
+    'markerEdgeColor',[1,1,1]*0.35,...
+    'MarkerSize',3)
 
 set([H.mu],'color','w')
 J=jet(length(H));

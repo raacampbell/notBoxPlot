@@ -14,8 +14,9 @@ The function has several examples and there are various visualization possibilit
 Although it's worked well for situations I've needed it, I will be happy to modify the function if users come up against problems.
 
 ## Features
+- Directly plot LinearModel objects from `fitlm` [NEW]
 - Easily mix a variety of plot styles on one figure
-- Easy post-hod modification of plot parameters via returned function handles
+- Easy post-hoc modification of plot parameters via returned function handles
 - Statistics (mean, SD, etc) optionally returned 
 - Optional plotting of median in addition to mean 
 - Option to plot either a 95% confidence interval for the mean or a 95% t-interval
@@ -34,3 +35,23 @@ A: Most modifications can be done using the function handles. See the function h
 
 ## Installation
 Add the ``code`` directory to your MATLAB path. Does not rely on any toolboxes. 
+
+
+## Changelog
+
+**v1.2 (28-08-16)**
+
+* Add median to plots
+* Select SEM or t-interval from command line
+* Return stats as second output
+* Move to parameter/value pairs by default and warn user if they aren't doing this. 
+* Add unit tests.
+
+**v1.3 (11-09-16)**
+
+* Remove legacy calls
+* Allow passing of a table, which automatically labels the axes
+* Pass a LinearModel, which automatically labels the axes and uses the model errors
+* Examples are now in separate files and doc text is neater
+* User can now optionally do `notBoxPlot(y,'jitter',0.5)` instead of `notBoxPlot(y,[],'jitter',0.5)` 
+

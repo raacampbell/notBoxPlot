@@ -17,13 +17,18 @@ function varargout=notBoxPlot(y,x,varargin)
 %
 %
 % Inputs
-% y - each column of y is one variable/group. If x is missing or empty
-%     then each column is plotted in a different x position. 
+% y - A vector, matrix, or table of the data to plot. 
+%      * vector and no x is provided: all data are grouped at one x position.
+%      * matrix and no x is provided: each column is plotted in a different x position. 
+%      * vector with x grouping variable provided: data grouped accordig to x
+%      * a Table is treated such that the first column is y and the second x.
+%      * a LinearModel produced by fitlm
 %
 % x - [optional], the x axis points at which y columns should be
 %     plotted. This allows more than one set of y values to appear
 %     at one x location. Such instances are coloured differently. 
 %     Contrast the first two panels in Example 1 to see how this input behaves.
+%     x need not be provided if y is a table.
 %
 % Note that if x and y are both vectors of the same length this function
 % behaves like boxplot (see Example 5).
@@ -45,6 +50,8 @@ function varargout=notBoxPlot(y,x,varargin)
 %
 % 'interval' - 'SEM' [default] Plots a 95% confidence interval for the mean
 %            - 'tInterval' Plots a 95% t-interval for the mean
+%            - If a LinearModel from fitlm is provided, interval is always
+%              the tInterval and the confidence interval comes from the model.
 %
 % 'markMedian' - false [default] if true the median value is highlighted
 %                The median is highlighted as a dotted line or an open square 
@@ -57,197 +64,207 @@ function varargout=notBoxPlot(y,x,varargin)
 % 
 %
 % 
-%
-% Example 1 - simple example
-% clf 
-% subplot(2,2,1)  
-% notBoxPlot(randn(20,5));
-% subplot(2,2,2)  
-% notBoxPlot(randn(20,5),[1:4,7]);
-% subplot(2,2,3:4)
-% h=notBoxPlot(randn(10,40));
-% d=[h.data];
-% set(d(1:4:end),'markerfacecolor',[0.4,1,0.4],'color',[0,0.4,0])
-%  
-% Example 2 - overlaying with areas
-% clf  
-% x=[1,2,3,4,5,5];
-% y=randn(20,length(x));
-% y(:,end)=y(:,end)+3;
-% y(:,end-1)=y(:,end-1)-1;
-% notBoxPlot(y,x);
-%
-% Example 3 - lines
-% clf
-% H=notBoxPlot(randn(20,5),[],'style','line');
-% set([H.data],'markersize',10)
-%
-% Example 4 - mix lines and areas [note that the way this function
-% sets the x axis limits can cause problems when combining plots
-% this way]
-%
-% clf
-% h=notBoxPlot(randn(10,1)+4,5,'style','line');
-% set(h.data,'color','m')  
-% h=notBoxPlot(randn(50,10));
-% set(h(5).data,'color','m')
-%  
-% Example 5 - x and y are vectors
-% clf
-% x=[1,1,1,3,2,1,3,3,3,2,2,3,3];
-% y=[7,8,6,1,5,7,2,1,3,4,5,2,4];
-% notBoxPlot(y,x);
+% -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+% Examples (run clf between examples):
 % 
-% Note: an alternative to the style used in Example 5 is to call
-% notBoxPlot from a loop in an external function. In this case, the
-% user will have to take care of the x-ticks and axis limits. 
-%    
-% Example 6 - replacing the SD with bars
-% clf
-% y=randn(50,1);
-% clf
-% notBoxPlot(y,1,'style','sdline')
-% notBoxPlot(y,2)   
-% xlim([0,3])
+% 1 - Basic usage:
+%  >> notBoxPlot([7,8,6,1,5,7,2,1,3,4,5,2,4])
+%  >> notBoxPlot([7,8,6,1,5,7,2,1,3,4,5,2,4], [1,1,1,3,2,1,3,3,3,2,2,3,3])
+%  >> notBoxPlot(rand(1,100))
+%  >> notBoxPlot(randn(20,5))
+%  >> notBoxPlot(randn(20,5),[1:4,7]);
+%  >> notBoxPlot(MY_TABLE)
 %
-%
-% Example 7 - the effect of jitter (default jitter is 0.3)
-% clf
-% subplot(2,1,1)
-% notBoxPlot(randn(20,5),[],'jitter',0.15)
-% subplot(2,1,2)
-% notBoxPlot(randn(20,5),[],'jitter',0.75);
-%
+%  For more run:
+%   NBP.simpleExamples
+%   NBP.tableExample
 % 
-% Example 8 - The 95% SEM vs the 95% t-interval
-% clf
-% y=randn(8,3);
-% subplot(1,2,1)
-% notBoxPlot(y), title('95% SEM (n=8)')
+% 2 - Changing plot style
+%  >> notBoxPlot(randn(20,5),[],'interval','tinterval'); 
+%  >> notBoxPlot(randn(20,5),'style','line'); %also valid: no need for x
+%  >> notBoxPlot(MY_TABLE,'jitter',0.5)
 %
-% subplot(1,2,2)
-% notBoxPlot(y,[],'interval','tInterval'), title('95% t-interval (n=8)')
+%  For more run:
+%   NBP.lineExamples
+%   NBP.jitterExamples
+%   NBP.showCase
 %
+% 3 - Showing different statistics
+%  >> notBoxPlot(randn(8,3),'interval','tInterval')
+%  >> notBoxPlot(randn(8,3),'markMedian',true)
 %
-% Example 8 - Add the median (dotted line) to plots
-% clf
-% n=[5,10,20,40];
-% for ii=1:4, rng(555), notBoxPlot(rand(1,n(ii)),ii,'markMedian',true), end
-%
-%
+%  For more run:
+%   NBP.statsOptionsExamples
 %
 % Rob Campbell - August 2016
 %
-% Also see: boxplot, NBP.example
+% Also see: boxplot
 
 
-    
-    
+
+
 % Check input arguments
 if nargin==0
     help(mfilename)
     return
 end
 
-
-if isvector(y), y=y(:); end
-
-if nargin<2 || isempty(x)
-    x=1:size(y,2);
+% Check if Y is of a suitable class 
+if ~isnumeric(y) && ~istable(y) && ~isa(y,'LinearModel')
+    fprintf('Variable y is a %s. This is not an allowed input type. see help %s\n',...
+        class(y), mfilename)
+    return
 end
 
+% Parse the different call types
+modelCIs=[]; 
+tableOrModelCall=false;
 
-if ~isempty(varargin)
-    if isnumeric(varargin{1})
-        jitter=varargin{1};
-        legacyCall=true;
-        fprintf(['\n%s called with legacy input arguments. See function help for new call format.\n',...
-            'Legacy input arguments will be removed in the next release\n\n'],mfilename)
-    else
-        legacyCall=false;
+switch lower(class(y))
+
+case 'table'
+    tableOrModelCall=true;
+    if nargin>1 %so user doesn't need to specify a blank variable for x
+        if ~isempty(x)
+            varargin=[x,varargin];
+        end
     end
-else
-    legacyCall=false;
-end
-
-if legacyCall && isempty(jitter)
-    jitter=0.3; %larger value means greater amplitude jitter
-end
-
-%Check for innapropriate mixed usage of new and old call types
-if (legacyCall && length(varargin)>2) || (~legacyCall && mod(length(varargin),2)>0)
-    error('notBoxPlot:legacyError','You have mixed legacy with new-style calls. See function help')
-end
-
-if legacyCall
-    if nargin<4
-        style='patch'; %Can also be 'line' or 'sdline'
-    else
-        style=lower(varargin{2});
+    thisTable=y;
+    varNames=thisTable.Properties.VariableNames;
+    if length(varNames) ~= 2
+        fprintf('% s can only handle tables with two variables\n',mfilename)
+        return
     end
+    y = thisTable.(varNames{1});
+    x = thisTable.(varNames{2});
 
-    %TODO: the following will be removed, along with other references to legacy calling, in the next release
-    varargin={'jitter',jitter,'style',style,'interval','SEM'}; %define varargin so we feed the new-form inputs to the recursive call, below.
-    intervalFun = @NBP.SEM_calc; 
-    interval= 'SEM';
-    markMedian = false;
-end
-
-
-
-
-    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-% Parse input arguments if new-style args were provided
-if ~legacyCall
-
-    params = inputParser;
-    params.CaseSensitive = false;
-    params.addParameter('jitter', 0.3, @(x) isnumeric(x) & isscalar(x));
-    params.addParameter('style','patch', @(x) ischar(x) && any(strncmp(x,{'patch','line','sdline'},inf)) ); 
-    params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmp(x,{'SEM','tInterval'},inf)) ); 
-    params.addParameter('markMedian', false, @(x) islogical(x));
-
-    params.parse(varargin{:});
-
-    %Extract values from the inputParser
-    jitter =  params.Results.jitter;
-    style =  params.Results.style;
-    interval = params.Results.interval;
-    markMedian = params.Results.markMedian;
-
-    %Set interval function
-    switch interval
-        case 'SEM'
-            intervalFun = @NBP.SEM_calc;
-        case 'tInterval'
-            intervalFun = @NBP.tInterval_calc;
-        otherwise
-            error('Interval %s is unknown',interval)
+case 'linearmodel'
+    tableOrModelCall=true;
+    if nargin>1 %so user doesn't need to specify a blank variable for x
+        if ~isempty(x)
+            varargin=[x,varargin];
+        end
     end
 
-end
+    thisModel=y;
+
+    if length(thisModel.PredictorNames) >1
+        fprintf('% s can only handle linear models with one predictor\n',mfilename)
+        return
+    end
+    y = thisModel.Variables.(thisModel.ResponseName);
+    x = thisModel.Variables.(thisModel.PredictorNames{1});
+
+    %Check that x is of a suitable type
+    if isnumeric(x)
+        fprintf('The model predictor variable should not be continuous\n')
+        return
+    end
+    if iscell(x)
+        fprintf('Coercing predictor variable from a cell array to a categorical variable\n')
+        x=categorical(x);
+    end
+
+    varNames = {thisModel.ResponseName,thisModel.PredictorNames{1}}; %for the axis labels
+
+   % Set the SD bar to have 1.96 standard deviations
+    varargin = [varargin,'numSDs',1.96];
+
+    % Get the the confidence intervals from the model
+    modelCIs = coefCI(thisModel,0.05);
+
+otherwise %Otherwise Y is a vector or a matrix
+
+    if isvector(y)
+        y=y(:); 
+    end
+
+    % Handle case where user doesn't supply X, but have user param/val pairs. e.g.
+    % notBoxPlot(rand(20,5),'jitter',0.5)
+    if nargin>2 && ischar(x)
+        varargin=[x,varargin];
+        x=[];
+    end
+
+    % Generate an monotonically increasing X variable if the user didn't supply anything
+    % for the grouping variable
+    if nargin<2 || isempty(x)
+        x=1:size(y,2);
+    end
+
+end %switch class(y)
 
 
 %If x is logical then the function fails. So let's make sure it's a double
 x=double(x);
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+% Parse input arguments
+params = inputParser;
+params.CaseSensitive = false;
+
+%User-visible options
+params.addParameter('jitter', 0.3, @(x) isnumeric(x) && isscalar(x));
+params.addParameter('style','patch', @(x) ischar(x) && any(strncmp(x,{'patch','line','sdline'},inf)) ); 
+params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmp(x,{'SEM','tInterval'},inf)) ); 
+params.addParameter('markMedian', false, @(x) islogical(x));
+
+%Options hidden from the user
+params.addParameter('numSDs',1, @(x) isnumeric(x) && isscalar(x) && x>=0) 
+params.addParameter('manualCI',[], @(x) (isnumeric(x) && isscalar(x)) || isempty(x) )
+
+params.parse(varargin{:});
+
+%Extract values from the inputParser
+jitter     = params.Results.jitter;
+style      = params.Results.style;
+interval   = params.Results.interval;
+markMedian = params.Results.markMedian;
+
+%The multiplier for the SD patch. e.g. for 1.96 SDs this value should be 1.96
+numSDs = params.Results.numSDs;
+manualCI = params.Results.manualCI; %Is used by the recursive call to over-ride the CI when y is a LinearModel
+
+%Set interval function
+switch interval
+    case 'SEM'
+        intervalFun = @NBP.SEM_calc;
+    case 'tInterval'
+        intervalFun = @NBP.tInterval_calc;
+    otherwise
+        error('Interval %s is unknown',interval)
+end
 
 if jitter==0 && strcmp(style,'patch') 
     warning('A zero value for jitter means no patch object visible')
 end
 
 
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+% We now loop through the unique x values, plotting each notBox in turn
+% using recursive calls to notBoxPlot.
 if isvector(y) && isvector(x) && length(x)>1
     x=x(:);
    
     if length(x)~=length(y)
         error('length(x) should equal length(y)')
     end
-    
+
     u=unique(x);
     for ii=1:length(u)
-        f=x==u(ii);
-        h(ii)=notBoxPlot(y(f),u(ii),varargin{:}); %recursive call
+        f = find(x==u(ii));
+
+        %If a model was used, we use the 95% t-intervals it produces
+        if ~isempty(modelCIs)
+            thisCI = range(modelCIs(ii,:))/2; %the interval is symmetric and we need just this. 
+        else
+            thisCI =[];
+        end
+
+        h(ii)=notBoxPlot(y(f),u(ii),varargin{:},'manualCI',thisCI); %recursive call
     end
 
 
@@ -256,26 +273,28 @@ if isvector(y) && isvector(x) && length(x)>1
         xlim([min(u)-1,max(u)+1])
         set(gca,'XTick',u)
     end
-    
+
     if nargout==1
         varargout{1}=h;
     end
 
-    return
-    
+    %If we had a table we can label the axes
+    if tableOrModelCall
+        ylabel(varNames{1})
+        xlabel(varNames{2})
+    end
+
+    return % User's call to notBoxPlot never goes beyond here
 end
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
 
- 
 if length(x) ~= size(y,2)
     error('length of x doesn''t match the number of columns in y')
 end
 
 
-
-    
-    
 
 
 %We're going to render points with the same x value in different
@@ -304,6 +323,7 @@ if length(x)>1
 end
 
 
+%handle the output arguments
 if nargout>0
     varargout{1}=H;
 end
@@ -312,9 +332,6 @@ if nargout>1
     varargout{2}=stats;
 end
 
-if nargout>2
-    varargout{3}=legacyCall;
-end
 
 
 
@@ -323,101 +340,113 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [h,statsOut]=myPlotter(X,Y)
+    %This is a nested function that shares the caller's namespace
 
- SEM=intervalFun(Y); %Supplied external function
- SD=std(Y,'omitnan');  %Requires the stats toolbox 
- mu=mean(Y,'omitnan'); %Requires the stats toolbox 
- if markMedian
-    med = median(Y,'omitnan');
- end
+    if isempty(manualCI)
+        SEM=intervalFun(Y); %A function handle to a supplied external function
+    else
+        SEM=manualCI;
+    end
 
-
-
- %The plot colors to use for multiple sets of points on the same x
- %location
- cols=hsv(length(X)+1)*0.5;
- cols(1,:)=0;
- jitScale=jitter*0.55; %To scale the patch by the width of the jitter
-
- for k=1:length(X)
-     thisY=Y(:,k);
-     thisY=thisY(~isnan(thisY));    
-     thisX=repmat(X(k),1,length(thisY));
-
-     if strcmp(style,'patch') 
-       h(k).sdPtch=patchMaker(SD(k),[0.6,0.6,1]);
-     end
-
-     %For optional command line output
-     statsOut(k).mu = mu(k);
-     statsOut(k).interval = SEM(k);
-     statsOut(k).sd = SD(k);
+    SD=std(Y,'omitnan')*numSDs; 
+    mu=mean(Y,'omitnan');
+    if markMedian
+       med = median(Y,'omitnan');
+    end
 
 
-     if strcmp(style,'patch') || strcmp(style,'sdline')
-       %Plot mean and SEM (and optionally the median)
-       h(k).semPtch=patchMaker(SEM(k),[1,0.6,0.6]);
-       h(k).mu=plot([X(k)-jitScale,X(k)+jitScale],[mu(k),mu(k)],'-r',...
-            'linewidth',2);
-       if markMedian
-          statsOut(k).median = med(k);
-          h(k).med=plot([X(k)-jitScale,X(k)+jitScale],[med(k),med(k)],':r',...
-                'linewidth',2);
-       end
-     end
-    
-     %Plot jittered raw data
-     C=cols(k,:);
-     J=(rand(size(thisX))-0.5)*jitter;
-        
-     h(k).data=plot(thisX+J, thisY, 'o', 'color', C,...
-                   'markerfacecolor', C+(1-C)*0.65);
- end
 
- if strcmp(style,'line') || strcmp(style,'sdline')
-   for k=1:length(X)    
-     %Plot SD
-     h(k).sd=plot([X(k),X(k)],[mu(k)-SD(k),mu(k)+SD(k)],...
-                  '-','color',[0.2,0.2,1],'linewidth',2);
-     set(h(k).sd,'ZData',[1,1]*-1)
-   end
- end
+    %The plot colors to use for multiple sets of points on the same x
+    %location
+    cols=hsv(length(X)+1)*0.5;
+    cols(1,:)=0;
+    jitScale=jitter*0.55; %To scale the patch by the width of the jitter
 
- if strcmp(style,'line')
-     for k=1:length(X)     
-         %Plot mean and SEM (and optionally the median)
-         h(k).mu=plot(X(k),mu(k),'o','color','r',...
-             'markerfacecolor','r',...
-             'markersize',10);
-        
-         h(k).sem=plot([X(k),X(k)],[mu(k)-SEM(k),mu(k)+SEM(k)],'-r',...
-             'linewidth',2);   
-        if markMedian
-            h(k).med=plot(X(k),med(k),'s','color',[0.8,0,0],...
-             'markerfacecolor','none',...
-             'lineWidth',2,...
-             'markersize',12);
+    for k=1:length(X)
+        thisY=Y(:,k);
+        thisY=thisY(~isnan(thisY));    
+        thisX=repmat(X(k),1,length(thisY));
+
+        %Assemble stats for optional command line output
+        statsOut(k).mu = mu(k);
+        statsOut(k).interval = SEM(k);
+        statsOut(k).sd = SD(k);
+
+
+        %Add the SD as a patch if the user asked for this
+        if strcmp(style,'patch') 
+            h(k).sdPtch=patchMaker(SD(k),[0.6,0.6,1]);
         end
 
-         h(k).xAxisLocation=x(k);
-     end
- end
- for ii=1:length(h)
-     h(ii).interval=interval;
- end
+        %Build patch surfaces for SEM, the means, and optionally the medians
+        if strcmp(style,'patch') || strcmp(style,'sdline')
+            h(k).semPtch=patchMaker(SEM(k),[1,0.6,0.6]);
+            h(k).mu=plot([X(k)-jitScale,X(k)+jitScale],[mu(k),mu(k)],'-r',...
+                'linewidth',2);
+            if markMedian
+                statsOut(k).median = med(k);
+                h(k).med=plot([X(k)-jitScale,X(k)+jitScale],[med(k),med(k)],':r',...
+                    'linewidth',2);
+            end
+        end
+
+        %Overlay the jittered raw data
+        C=cols(k,:);
+        J=(rand(size(thisX))-0.5)*jitter;
+
+        h(k).data=plot(thisX+J, thisY, 'o', 'color', C,...
+                       'markerfacecolor', C+(1-C)*0.65);
+    end  %for k=1:length(X)
+
+
+    %Plot SD as a line
+    if strcmp(style,'line') || strcmp(style,'sdline')
+        for k=1:length(X)
+            h(k).sd=plot([X(k),X(k)],[mu(k)-SD(k),mu(k)+SD(k)],...
+                      '-','color',[0.2,0.2,1],'linewidth',2);
+            set(h(k).sd,'ZData',[1,1]*-1)
+        end
+    end
+
+
+    %Plot mean and SEM as a line, the means, and optionally the medians
+    if strcmp(style,'line')
+        for k=1:length(X)
+
+            h(k).mu=plot(X(k),mu(k),'o','color','r',...
+                'markerfacecolor','r',...
+                'markersize',10);
+
+            h(k).sem=plot([X(k),X(k)],[mu(k)-SEM(k),mu(k)+SEM(k)],'-r',...
+                'linewidth',2);   
+            if markMedian
+                h(k).med=plot(X(k),med(k),'s','color',[0.8,0,0],...
+                'markerfacecolor','none',...
+                'lineWidth',2,...
+                'markersize',12);
+            end
+
+             h(k).xAxisLocation=x(k);
+        end
+    end % if strcmp(style,'line')
+
+    for ii=1:length(h)
+        h(ii).interval=interval;
+    end
 
 
 
-     function ptch=patchMaker(thisInterval,color)
-         l=mu(k)-thisInterval;
-         u=mu(k)+thisInterval;
-         ptch=patch([X(k)-jitScale, X(k)+jitScale, X(k)+jitScale, X(k)-jitScale],...
+    function ptch=patchMaker(thisInterval,color)
+        %This nested function builds a patch for the SD or SEM
+        l=mu(k)-thisInterval;
+        u=mu(k)+thisInterval;
+        ptch=patch([X(k)-jitScale, X(k)+jitScale, X(k)+jitScale, X(k)-jitScale],...
                 [l,l,u,u], 0);
-         set(ptch,'edgecolor',color*0.8,'facecolor',color)
-     end %function patchMaker
+        set(ptch,'edgecolor',color*0.8,'facecolor',color)
+    end %function patchMaker
 
-        
-    
+
+
 end %function myPlotter
 
 
