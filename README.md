@@ -14,6 +14,7 @@ The function has several examples and there are various visualization possibilit
 Although it's worked well for situations I've needed it, I will be happy to modify the function if users come up against problems.
 
 ## Features
+- Directly plot LinearModel objects from `fitlm` [NEW]
 - Easily mix a variety of plot styles on one figure
 - Easy post-hoc modification of plot parameters via returned function handles
 - Statistics (mean, SD, etc) optionally returned 
