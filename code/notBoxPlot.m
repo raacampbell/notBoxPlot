@@ -154,6 +154,17 @@ case 'linearmodel'
     end
     y = thisModel.Variables.(thisModel.ResponseName);
     x = thisModel.Variables.(thisModel.PredictorNames{1});
+
+    %Check that x is of a suitable type
+    if isnumeric(x)
+        fprintf('The model predictor variable should not be continuous\n')
+        return
+    end
+    if iscell(x)
+        fprintf('Coercing predictor variable from a cell array to a categorical variable\n')
+        x=categorical(x);
+    end
+
     varNames = {thisModel.ResponseName,thisModel.PredictorNames{1}}; %for the axis labels
 
    % Set the SD bar to have 1.96 standard deviations
