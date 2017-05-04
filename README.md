@@ -34,7 +34,7 @@ A: Most modifications can be done using the function handles. See the function h
 - NBP.example - makes a nice example plot
 
 ## Installation
-Add the ``code`` directory to your MATLAB path. Does not rely on any toolboxes. 
+Add the ``code`` directory to your MATLAB path. Some operations (such as t-interval calculation) depend on the Stats Toolbox.
 
 
 ## Changelog
