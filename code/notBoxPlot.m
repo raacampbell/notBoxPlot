@@ -77,7 +77,7 @@ function varargout=notBoxPlot(y,x,varargin)
 %
 %  For more run:
 %   NBP.simpleExamples
-%   NBP.tableExample
+%   NBP.tableExamples
 % 
 % 2 - Changing plot style
 %  >> notBoxPlot(randn(20,5),[],'interval','tinterval'); 

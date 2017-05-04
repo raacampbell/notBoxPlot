@@ -43,13 +43,14 @@ if isvector(vect)
   vect=vect(:);
 end
 
+% Define an anonymous function to take over from norminv, which is in the Stats ToolBox
+myNormInv = @(x) -sqrt(2)*erfcinv(2*x);
 
 if nargin==1
   stdCI = 1.96 ; 
 elseif nargin==2
   CI = CI/2 ; %Convert to 2-tail
-  stdCI = abs(norminv(CI,0,1)) ;
+  stdCI = abs(myNormInv(CI)); % This is the same as doing: abs(norminv(CI,0,1)) 
 end
 
-sem = ( (nanstd(vect)) ./ sqrt(sum(~isnan(vect))) ) * stdCI ;    
-
+sem = ( std(vect,'omitnan') ./ sqrt(sum(~isnan(vect))) ) * stdCI ;    
