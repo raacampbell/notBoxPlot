@@ -207,8 +207,8 @@ params.CaseSensitive = false;
 
 %User-visible options
 params.addParameter('jitter', 0.3, @(x) isnumeric(x) && isscalar(x));
-params.addParameter('style','patch', @(x) ischar(x) && any(strncmp(x,{'patch','line','sdline'},4)) ); 
-params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmp(x,{'SEM','tInterval'},inf)) ); 
+params.addParameter('style','patch', @(x) ischar(x) && any(strncmp(lower(x),{'patch','line','sdline'},4)) ); 
+params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmp(lower(x),{'sem','tinterval'},inf)) ); 
 params.addParameter('markMedian', false, @(x) islogical(x));
 
 %Options hidden from the user
@@ -228,10 +228,10 @@ numSDs = params.Results.numSDs;
 manualCI = params.Results.manualCI; %Is used by the recursive call to over-ride the CI when y is a LinearModel
 
 %Set interval function
-switch interval
-    case 'SEM'
+switch lower(interval)
+    case 'sem'
         intervalFun = @NBP.SEM_calc;
-    case 'tInterval'
+    case 'tinterval'
         intervalFun = @NBP.tInterval_calc;
     otherwise
         error('Interval %s is unknown',interval)
