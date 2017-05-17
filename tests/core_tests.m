@@ -39,6 +39,11 @@ classdef core_tests < matlab.unittest.TestCase
             h=notBoxPlot(y,x,'style','line','markMedian',true);
             testCase.verifyTrue(isfield(h,'med'))
 
+            %With NaNs
+            clf
+            y(1,1)=nan;
+            H=notBoxPlot(y,x,'jitter',0.6,'style','sdline');
+
             %Check that the showCase example runs
             NBP.showCase
             

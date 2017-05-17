@@ -52,4 +52,4 @@ if stdCI==0
   error('Can''t find confidence iterval for 0 standard deviations!')
 end
 
-tint = ( std(vect,'omitnan') ./ sqrt(sum(~isnan(vect))) ) * stdCI ;    
+tint = ( std(vect( ~isnan(vect) ) ) ./ sqrt(sum(~isnan(vect))) ) * stdCI ;

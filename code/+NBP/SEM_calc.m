@@ -53,4 +53,4 @@ elseif nargin==2
   stdCI = abs(myNormInv(CI)); % This is the same as doing: abs(norminv(CI,0,1)) 
 end
 
-sem = ( std(vect,'omitnan') ./ sqrt(sum(~isnan(vect))) ) * stdCI ;    
+sem = ( std(vect( ~isnan(vect) ) ) ./ sqrt(sum(~isnan(vect))) ) * stdCI ;

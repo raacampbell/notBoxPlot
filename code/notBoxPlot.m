@@ -200,15 +200,15 @@ x=double(x);
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parse input arguments
 params = inputParser;
 params.CaseSensitive = false;
 
 %User-visible options
 params.addParameter('jitter', 0.3, @(x) isnumeric(x) && isscalar(x));
-params.addParameter('style','patch', @(x) ischar(x) && any(strncmp(lower(x),{'patch','line','sdline'},4)) ); 
-params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmp(lower(x),{'sem','tinterval'},inf)) ); 
+params.addParameter('style','patch', @(x) ischar(x) && any(strncmpi(x,{'patch','line','sdline'},4)) );
+params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmpi(x,{'sem','tinterval'},inf)) );
 params.addParameter('markMedian', false, @(x) islogical(x));
 
 %Options hidden from the user
@@ -248,7 +248,7 @@ end
 % using recursive calls to notBoxPlot.
 if isvector(y) && isvector(x) && length(x)>1
     x=x(:);
-   
+
     if length(x)~=length(y)
         error('length(x) should equal length(y)')
     end
@@ -316,7 +316,7 @@ end
 
 hold off
 
-%Tidy up plot: make it look pretty 
+%Tidy up plot: make it look pretty
 if length(x)>1
     set(gca,'XTick',unique(x))
     xlim([min(x)-1,max(x)+1])
@@ -348,13 +348,29 @@ function [h,statsOut]=myPlotter(X,Y)
         SEM=manualCI;
     end
 
-    SD=std(Y,'omitnan')*numSDs; 
-    mu=mean(Y,'omitnan');
-    if markMedian
-       med = median(Y,'omitnan');
+    % NaNs do not contribute to the sample size
+    if ~any(isnan(Y(:)))
+        % So we definitely have no problems with older MATLAB releases or non-stats toolbox installs
+        SD=std(Y)*numSDs; 
+        mu=mean(Y);
+        if markMedian
+           med = median(Y);
+        end
+    elseif ~verLessThan('matlab','9.0') %from this version onwards we use the omitnan flag
+        SD=std(Y,'omitnan')*numSDs; 
+        mu=mean(Y,'omitnan');
+        if markMedian
+           med = median(Y,'omitnan');
+        end
+    elseif which('nanmean') %Otherwise proceed if stats toolbox is there
+        SD=nanstd(Y)*numSDs; 
+        mu=nanmean(Y);
+        if markMedian
+           med = nanmedian(Y);
+        end
+    else %raise error
+        error('You have NaNs in your data set but are running older than R2016a or you have no stats toolbox.')
     end
-
-
 
     %The plot colors to use for multiple sets of points on the same x
     %location
@@ -363,8 +379,9 @@ function [h,statsOut]=myPlotter(X,Y)
     jitScale=jitter*0.55; %To scale the patch by the width of the jitter
 
     for k=1:length(X)
+
         thisY=Y(:,k);
-        thisY=thisY(~isnan(thisY));    
+        thisY=thisY(~isnan(thisY));
         thisX=repmat(X(k),1,length(thisY));
 
         %Assemble stats for optional command line output
@@ -430,8 +447,8 @@ function [h,statsOut]=myPlotter(X,Y)
         end
     end % if strcmp(style,'line')
 
-    for ii=1:length(h)
-        h(ii).interval=interval;
+    for thisInterval=1:length(h)
+        h(thisInterval).interval=interval;
     end
 
 
