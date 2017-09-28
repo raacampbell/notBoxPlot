@@ -208,7 +208,7 @@ params.CaseSensitive = false;
 %User-visible options
 params.addParameter('jitter', 0.3, @(x) isnumeric(x) && isscalar(x));
 params.addParameter('style','patch', @(x) ischar(x) && any(strncmpi(x,{'patch','line','sdline'},4)) );
-params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmpi(x,{'sem','tinterval'},inf)) );
+params.addParameter('interval','SEM', @(x) ischar(x) && any(strncmpi(x,{'sem','tinterval'},4)) );
 params.addParameter('markMedian', false, @(x) islogical(x));
 
 %Options hidden from the user
