@@ -27,6 +27,10 @@ Q: "How can I modify the plot to look like..."
 A: Most modifications can be done using the function handles. See the function help and the example function, NBP_example
 
 
+Q: How can I disable displaying the data points?
+<br />
+A: H=notBoxPlot(data,'jitter',0.6); d=[H.data]; set(d,'Visible','off')
+
 ## Included functions
 - notBoxPlot.m - generates plots as shown in screenshot
 - NBP.SEM_calc.m - calculate standard error of the mean. Provided as a separate function file so that it can be used for other purposes.
