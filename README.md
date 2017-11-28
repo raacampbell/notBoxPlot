@@ -42,6 +42,7 @@ Add the ``code`` directory to your MATLAB path. Some operations (such as t-inter
 
 **v1.31 (28-11-17)**
 
+* Bugfix to SEM and t-interval calc functions that caused errors to be pooled when fed a matrix rather than a vector
 * Jitter is no "violin-like" so it scales with point density in Y. Looks neater. 
 
 
