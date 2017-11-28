@@ -53,4 +53,7 @@ elseif nargin==2
   stdCI = abs(myNormInv(CI)); % This is the same as doing: abs(norminv(CI,0,1)) 
 end
 
-sem = ( std(vect( ~isnan(vect) ) ) ./ sqrt(sum(~isnan(vect))) ) * stdCI ;
+for ii=1:size(vect,2)
+    f =  find(~isnan(vect(:,ii)));
+    sem(ii) = ( std(vect(f,ii))  ./ sqrt(length(f)) ) * stdCI ;
+end
