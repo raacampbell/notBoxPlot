@@ -39,13 +39,11 @@ Add the ``code`` directory to your MATLAB path. Some operations (such as t-inter
 
 ## Changelog
 
-**v1.2 (28-08-16)**
 
-* Add median to plots
-* Select SEM or t-interval from command line
-* Return stats as second output
-* Move to parameter/value pairs by default and warn user if they aren't doing this. 
-* Add unit tests.
+**v1.31 (28-11-17)**
+
+* Jitter is no "violin-like" so it scales with point density in Y. Looks neater. 
+
 
 **v1.3 (11-09-16)**
 
@@ -55,3 +53,11 @@ Add the ``code`` directory to your MATLAB path. Some operations (such as t-inter
 * Examples are now in separate files and doc text is neater
 * User can now optionally do `notBoxPlot(y,'jitter',0.5)` instead of `notBoxPlot(y,[],'jitter',0.5)` 
 
+
+**v1.2 (28-08-16)**
+
+* Add median to plots
+* Select SEM or t-interval from command line
+* Return stats as second output
+* Move to parameter/value pairs by default and warn user if they aren't doing this. 
+* Add unit tests.
