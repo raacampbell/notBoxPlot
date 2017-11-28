@@ -6,25 +6,29 @@ function jitterExamples
 %
 % clf
 %
-% R = randn(20,5);
+% R = randn(40,5);
 %
-% subplot(2,1,1)
+% subplot(3,1,1)
 % notBoxPlot(R,'jitter',0.15)
 %
-% subplot(2,1,2)
-% notBoxPlot(R,'jitter',0.75);
+% subplot(3,1,2)
+% notBoxPlot(R,'jitter',0.3); % The default
 %
+% subplot(3,1,3)
+% notBoxPlot(R,'jitter',0.6);
+
 
 help(['NBP.',mfilename])
 
 clf
 
-R = randn(20,5);
+R = randn(40,5);
 
-subplot(2,1,1)
+subplot(3,1,1)
 notBoxPlot(R,'jitter',0.15)
 
-subplot(2,1,2)
-notBoxPlot(R,'jitter',0.75);
+subplot(3,1,2)
+notBoxPlot(R,'jitter',0.3); % The default
 
-
+subplot(3,1,3)
+notBoxPlot(R,'jitter',0.6);

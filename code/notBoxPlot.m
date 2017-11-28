@@ -38,7 +38,7 @@ function varargout=notBoxPlot(y,x,varargin)
 % 'jitter' - how much to jitter the data for visualization
 %          (optional). The width of the boxes are automatically
 %          scaled to the jitter magnitude. If jetter is empty or
-%          missing then a default value is used. 
+%          missing then a default value of 0.3 is used. 
 %
 % 'style' - a string defining plot style of the data.
 %        'patch' [default] - plots 95% SEM (by default, see below) and SD as a 
@@ -407,11 +407,13 @@ function [h,statsOut]=myPlotter(X,Y)
             end
         end
 
+        thisX=violaPoints(thisX,thisY);
+
         %Overlay the jittered raw data
         C=cols(k,:);
         J=(rand(size(thisX))-0.5)*jitter;
 
-        h(k).data=plot(thisX+J, thisY, 'o', 'color', C,...
+        h(k).data=plot(thisX, thisY, 'o', 'color', C,...
                        'markerfacecolor', C+(1-C)*0.65);
     end  %for k=1:length(X)
 
@@ -453,20 +455,33 @@ function [h,statsOut]=myPlotter(X,Y)
 
 
 
-    function ptch=patchMaker(thisInterval,color)
+    function ptch=patchMaker(thisInterval,tColor)
         %This nested function builds a patch for the SD or SEM
         l=mu(k)-thisInterval;
         u=mu(k)+thisInterval;
         ptch=patch([X(k)-jitScale, X(k)+jitScale, X(k)+jitScale, X(k)-jitScale],...
                 [l,l,u,u], 0);
-        set(ptch,'edgecolor',color*0.8,'facecolor',color)
+        set(ptch,'edgecolor',tColor*0.8,'facecolor',tColor)
     end %function patchMaker
 
 
+    function X=violaPoints(X,Y)
+        % Variable jitter according to how many points occupy each range of values. 
+        [counts,~,bins] = histcounts(Y,10);
+        inds = find(counts~=0);
+        counts = counts(inds);
 
-end %function myPlotter
+        Xr = X;
+        for jj=1:length(inds)
+            tWidth = jitter * (1-exp(-0.1 * (counts(jj)-1)));
+            xpoints = linspace(-tWidth*0.8, tWidth*0.8, counts(jj));
+            Xr(bins==inds(jj)) = xpoints;
+        end
+        X = X+Xr;
+    end % function violaPoints
 
 
+end % function myPlotter
 
 
 

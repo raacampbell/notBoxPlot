@@ -22,7 +22,7 @@ hFig=figure(1984);
 
 set(hFig,...
     'Name','notBoxPlot example',...
-    'PaperPosition',[0,0,12,9]) %Just to make save to disk consistent)
+    'PaperPosition',[0,0,32,27]) %Just to make save to disk consistent)
 clf
 
 W=0.45; %image width
