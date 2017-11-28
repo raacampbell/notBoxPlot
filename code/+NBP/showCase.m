@@ -27,6 +27,7 @@ clf
 
 W=0.45; %image width
 
+% Top/left plot
 axes('position',[0.05,0.53,W,W])
 r=randn(40,5);
 for ii=1:5
@@ -38,6 +39,7 @@ grid on
 
 
 
+% Top/right plot
 axes('position',[0.53,0.53,W,W])
 r=randn(20,20);
 
@@ -64,11 +66,10 @@ set([H(find(IND)).sdPtch],...
 set([H(find(IND)).mu],...
     'Color',[0,0.4,0])
 
-
 set(gca,'XTick',[]) 
 
 
-%lower means as gray
+% Color lower means gray
 set([H(find(~IND)).data],'MarkerSize',4,...
     'markerFaceColor',[1,1,1]*0.5,...
     'markerEdgeColor', 'none')
@@ -90,7 +91,7 @@ x=[1,2,3,3];
 y=randn(20,length(x));
 y(:,end)=0.5*y(:,end)+4;
 y(:,end-1)=y(:,end-1)-1;
-y(1:8,end-1:end)=nan;
+y(1:8,end-1:end)=nan; %Decrease sample size in the last two plots
 
 H=notBoxPlot(y,x,'jitter',0.6,'style','sdline');
 set(H(end).data,'Marker','^',...
