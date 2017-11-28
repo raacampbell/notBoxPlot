@@ -46,7 +46,7 @@ Add the ``code`` directory to your MATLAB path. Some operations (such as t-inter
 * Jitter is no "violin-like" so it scales with point density in Y. Looks neater. 
 
 
-**v1.3 (11-09-16)**
+**v1.3 (11-09-17)**
 
 * Remove legacy calls
 * Allow passing of a table, which automatically labels the axes
