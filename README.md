@@ -1,4 +1,7 @@
 # notBoxPlot
+
+[![View notBoxPlot on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://uk.mathworks.com/matlabcentral/fileexchange/26508-notboxplot)
+
 <p align="center">
 <img src="https://raw.githubusercontent.com/raacampbell/notBoxPlot/gh-pages/images/nbp_example.png"  height=550px/>
 </p>
