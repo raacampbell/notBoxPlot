@@ -269,7 +269,7 @@ if isvector(y) && isvector(x) && length(x)>1
             thisCI =[];
         end
 
-        h(ii)=notBoxPlot(y(f),u(ii),varargin{:},'manualCI',thisCI); %recursive call
+       [h(ii),s(ii)]=notBoxPlot(y(f),u(ii),varargin{:},'manualCI',thisCI); %recursive call
     end
 
 
@@ -279,9 +279,14 @@ if isvector(y) && isvector(x) && length(x)>1
         set(gca,'XTick',u)
     end
 
-    if nargout==1
+    if nargout>0
         varargout{1}=h;
     end
+    if nargout>1
+        varargout{2}=s;
+    end
+
+
 
     %If we had a table we can label the axes
     if tableOrModelCall
